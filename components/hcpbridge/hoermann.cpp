@@ -46,12 +46,22 @@ void HoermannGarageEngine::setup(int8_t rx, int8_t tx, int8_t rts)
   }
   mb.slave(SLAVE_ID);
 
-  // Single-core chips (C3/S2/C6) have only core 0, shared with the ESPHome main
-  // loop. A dedicated busy task starves that loop, so entities never register
-  // with the HA API. On those chips we skip the task and poll mb.task() from the
-  // component's loop() instead (see HCPBridge::loop). mb.task() is non-blocking.
-  // Dual-core chips (classic ESP32/S3) keep the original dedicated task on core 1.
-#if !(defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32C6))
+  // The modbus serve task yields each iteration (vTaskDelay(1)). On dual-core
+  // chips it runs at max priority on core 1, away from the ESPHome main loop.
+  // On single-core chips (C3/S2/C6) the loop shares the only core, so a
+  // max-priority task starves it and entities never register with the HA API.
+  // There we run the task at the same priority as the Arduino loop on core 0,
+  // so the two time-slice and both make progress.
+#if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32C6)
+  xTaskCreatePinnedToCore(
+      modbusServeTask, /* Function to implement the task */
+      "ModBusTask",    /* Name of the task */
+      10000,           /* Stack size in words */
+      NULL,            /* Task input parameter */
+      1,               /* Same priority as the Arduino loop task */
+      &modBusTask,     /* Task handle. */
+      0);              /* Only core 0 exists on single-core chips */
+#else
   xTaskCreatePinnedToCore(
       modbusServeTask, /* Function to implement the task */
       "ModBusTask",    /* Name of the task */

@@ -18,7 +18,6 @@ namespace esphome
       public:
         void setup() override;
         void update() override;
-        void loop() override;
 
         void set_is_connected(binary_sensor::BinarySensor *is_connected) { this->is_connected_ = is_connected; }
         void set_tx_pin(InternalGPIOPin *tx_pin) { this->tx_pin_ = tx_pin; }

@@ -17,15 +17,6 @@ namespace esphome
       this->engine->setup(rx, tx, rts);
     }
 
-    void HCPBridge::loop() {
-      // On single-core chips there is no dedicated modbus task (it would starve
-      // the main loop), so service modbus cooperatively here. mb.task() is
-      // non-blocking. Dual-core chips run the task instead, so this is a no-op.
-#if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32C6)
-      this->engine->handleModbus();
-#endif
-    }
-
     void HCPBridge::update() {
       if (this->engine->state->valid) {
         if (this->is_connected_->state != true) {
