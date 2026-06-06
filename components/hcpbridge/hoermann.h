@@ -13,13 +13,19 @@
 #define SIMULATEKEYPRESSDELAYMS 100
 #define DEADREPORTTIMEOUT 60000
 
+// Single-UART targets (C3/S2/C6) have no Serial2; use Serial1 instead.
+// Classic ESP32 and S3 keep Serial2 to preserve upstream behavior.
+#if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32C6)
+#define RS485 Serial1
+#else
 #define RS485 Serial2
+#endif
 #ifdef CONFIG_IDF_TARGET_ESP32S3
 #define PIN_TXD 17
 #define PIN_RXD 18
 #else
 #define PIN_TXD 17 // UART 2 TXT - G17
-#define PIN_RXD 16 // UART 2 RXD - G16 
+#define PIN_RXD 16 // UART 2 RXD - G16
 #endif
 
 // workaround as my Supramatic did not Report the Status 0x0A when it's en vent Position
