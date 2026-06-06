@@ -51,10 +51,18 @@ void HoermannGarageEngine::setup(int8_t rx, int8_t tx, int8_t rts)
       "ModBusTask",    /* Name of the task */
       10000,           /* Stack size in words */
       NULL,            /* Task input parameter */
-      // 1,  /* Priority of the task */
+      // Single-core chips (C3/S2/C6) have only core 0 and share it with the
+      // ESPHome main loop. A max-priority busy task starves the loop so entities
+      // never register with the HA API. Use a moderate priority + core 0 there.
+#if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32C6)
+      5,           /* Priority of the task */
+      &modBusTask, /* Task handle. */
+      0);          /* Only core 0 exists on single-core chips */
+#else
       configMAX_PRIORITIES - 1,
       &modBusTask, /* Task handle. */
       1);          /* Core where the task should run */
+#endif
 
   // Required for Write
   mb.addHreg(0x9C41, 0, 0x03); // Commands
