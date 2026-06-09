@@ -17,7 +17,7 @@ CONF_RTS_PIN = "rts_pin"
 
 
 hcpbridge_ns = cg.esphome_ns.namespace("hcpbridge")
-HCPBridge = hcpbridge_ns.class_("HCPBridge", cg.Component)
+HCPBridge = hcpbridge_ns.class_("HCPBridge", cg.PollingComponent)
 
 CONF_HCPBridge_ID = "hcpbridge_id"
 
@@ -30,7 +30,7 @@ CONFIG_SCHEMA = (
     cv.Optional(CONF_RX_PIN): pins.gpio_input_pin_schema,
     cv.Optional(CONF_TX_PIN): pins.gpio_output_pin_schema,
     cv.Optional(CONF_RTS_PIN): pins.gpio_output_pin_schema,
-  })
+  }).extend(cv.polling_component_schema("500ms"))
 )
 
 async def to_code(config):

@@ -5,7 +5,7 @@ from .. import hcpbridge_ns, CONF_HCPBridge_ID, HCPBridge
 
 DEPENDENCIES = ["hcpbridge"]
 
-HCPBridgeSwitch = hcpbridge_ns.class_("HCPBridgeSwitch", switch.Switch, cg.Component)
+HCPBridgeSwitch = hcpbridge_ns.class_("HCPBridgeSwitch", switch.Switch, cg.PollingComponent)
 
 CONFIG_SCHEMA = (
     switch.switch_schema(HCPBridgeSwitch)
@@ -14,7 +14,7 @@ CONFIG_SCHEMA = (
             cv.GenerateID(CONF_HCPBridge_ID): cv.use_id(HCPBridge),
         }
     )
-    .extend(cv.COMPONENT_SCHEMA)
+    .extend(cv.polling_component_schema("500ms"))
 )
 
 
